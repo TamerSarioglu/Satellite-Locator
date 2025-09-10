@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.tamersarioglu.satellitelocator.presentation.ui.list.SatelliteListScreen
 
 @Composable
 fun SatelliteNavHost(
@@ -41,16 +42,9 @@ fun SatelliteNavHost(
 }
 
 @Composable
-fun SatelliteListScreen(
-    onSatelliteClick: (Int) -> Unit
-) {
-
-}
-
-@Composable
 fun SatelliteDetailScreen(
     satelliteId: Int,
     onBackClick: () -> Unit
 ) {
-
+    // TODO: Implement satellite detail screen
 }
