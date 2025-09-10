@@ -33,15 +33,15 @@ class SatelliteMapper @Inject constructor() {
         )
     }
 
-    fun toDomainList(dtoList: List<SatelliteDto>): List<Satellite> {
-        return dtoList.map { toDomain(it) }
+    fun dtosToDomainList(dtos: List<SatelliteDto>): List<Satellite> {
+        return dtos.map { toDomain(it) }
     }
 
-    fun toDomainList(entities: List<SatelliteEntity>): List<Satellite> {
+    fun entitiesToDomainList(entities: List<SatelliteEntity>): List<Satellite> {
         return entities.map { toDomain(it) }
     }
 
-    fun toEntityList(dtoList: List<SatelliteDto>): List<SatelliteEntity> {
-        return dtoList.map { toEntity(it) }
+    fun dtosToEntityList(dtos: List<SatelliteDto>): List<SatelliteEntity> {
+        return dtos.map { toEntity(it) }
     }
 }

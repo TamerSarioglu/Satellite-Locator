@@ -10,7 +10,6 @@ import javax.inject.Singleton
 @Singleton
 class PositionMapper @Inject constructor() {
 
-    // DTO → Domain
     fun toDomain(dto: PositionDto): Position {
         return Position(
             x = dto.posX,
@@ -25,7 +24,6 @@ class PositionMapper @Inject constructor() {
         )
     }
 
-    // List transformations
     fun toDomainList(dtos: List<PositionDto>): List<Position> {
         return dtos.map { toDomain(it) }
     }

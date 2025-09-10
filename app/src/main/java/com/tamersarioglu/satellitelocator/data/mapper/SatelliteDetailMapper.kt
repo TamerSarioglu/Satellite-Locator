@@ -13,7 +13,6 @@ class SatelliteDetailMapper @Inject constructor() {
 
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    // DTO → Domain (from JSON/API)
     fun toDomain(dto: SatelliteDetailDto): SatelliteDetail {
         return SatelliteDetail(
             id = dto.id,
@@ -24,7 +23,6 @@ class SatelliteDetailMapper @Inject constructor() {
         )
     }
 
-    // Entity → Domain (from Cache)
     fun toDomain(entity: SatelliteDetailEntity): SatelliteDetail {
         return SatelliteDetail(
             id = entity.id,
@@ -35,27 +33,25 @@ class SatelliteDetailMapper @Inject constructor() {
         )
     }
 
-    // DTO → Entity (for caching only)
     fun toEntity(dto: SatelliteDetailDto): SatelliteDetailEntity {
         return SatelliteDetailEntity(
             id = dto.id,
             costPerLaunch = dto.costPerLaunch,
-            firstFlight = dto.firstFlight, // Keep as string in cache
+            firstFlight = dto.firstFlight,
             height = dto.height,
             mass = dto.mass
         )
     }
 
-    // List transformations
-    fun toDomainList(dtos: List<SatelliteDetailDto>): List<SatelliteDetail> {
+    fun dtosToDomainList(dtos: List<SatelliteDetailDto>): List<SatelliteDetail> {
         return dtos.map { toDomain(it) }
     }
 
-    fun toDomainList(entities: List<SatelliteDetailEntity>): List<SatelliteDetail> {
+    fun entitiesToDomainList(entities: List<SatelliteDetailEntity>): List<SatelliteDetail> {
         return entities.map { toDomain(it) }
     }
 
-    fun toEntityList(dtos: List<SatelliteDetailDto>): List<SatelliteDetailEntity> {
+    fun dtosToEntityList(dtos: List<SatelliteDetailDto>): List<SatelliteDetailEntity> {
         return dtos.map { toEntity(it) }
     }
 }
