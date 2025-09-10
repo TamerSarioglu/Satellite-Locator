@@ -23,5 +23,5 @@ class GetSatelliteDetailUseCase @Inject constructor(
         }
     }
 }
-
+//TODO: Gerekli mi?
 class SatelliteDetailNotFoundException(message: String) : Exception(message)

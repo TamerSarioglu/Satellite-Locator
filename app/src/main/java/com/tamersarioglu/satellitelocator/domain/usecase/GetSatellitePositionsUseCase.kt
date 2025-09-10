@@ -20,13 +20,11 @@ class GetSatellitePositionsUseCase @Inject constructor(
             if (satellitePositions.isNotEmpty()) {
                 val positions = satellitePositions.first().positions
 
-                // Emit each position every 3 seconds
                 for (position in positions) {
                     emit(position)
-                    delay(3000) // 3 seconds interval as required
+                    delay(3000)
                 }
 
-                // Loop back to first position to create continuous cycle
                 while (true) {
                     for (position in positions) {
                         emit(position)
@@ -35,7 +33,6 @@ class GetSatellitePositionsUseCase @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            // Could emit error state or handle gracefully
             throw e
         }
     }
