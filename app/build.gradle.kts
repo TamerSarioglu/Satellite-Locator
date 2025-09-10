@@ -94,5 +94,5 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.timber)
+    // Removed timber - not needed
 }
