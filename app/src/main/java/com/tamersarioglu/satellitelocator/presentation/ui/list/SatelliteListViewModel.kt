@@ -25,11 +25,11 @@ class SatelliteListViewModel @Inject constructor(
 
     private fun observeSatellites() {
         viewModelScope.launch {
-            runCatching {
+            try {
                 getSatellitesUseCase().collect { satellites ->
                     updateSatellitesData(satellites)
                 }
-            }.onFailure { error ->
+            } catch (error: Exception) {
                 _uiState.value = SatelliteListUiState.Error(
                     error.message ?: "Failed to load satellites"
                 )

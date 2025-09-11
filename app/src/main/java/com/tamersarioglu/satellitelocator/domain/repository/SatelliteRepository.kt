@@ -6,7 +6,6 @@ import com.tamersarioglu.satellitelocator.domain.model.SatellitePosition
 import kotlinx.coroutines.flow.Flow
 
 interface SatelliteRepository {
-
     suspend fun getAllSatellites(): Flow<List<Satellite>>
     suspend fun refreshSatellites()
     suspend fun getSatelliteDetail(satelliteId: Int): SatelliteDetail?

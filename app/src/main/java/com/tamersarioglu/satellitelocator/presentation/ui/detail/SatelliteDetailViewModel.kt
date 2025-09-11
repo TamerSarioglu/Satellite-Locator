@@ -30,30 +30,33 @@ class SatelliteDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = SatelliteDetailUiState.Loading
 
-            loadSatelliteData(satelliteId)
-                .onSuccess { (satellite, detail) ->
+            loadSatelliteData(satelliteId).fold(
+                onSuccess = { (satellite, detail) ->
                     _uiState.value = SatelliteDetailUiState.Success(satellite, detail)
                     startPositionUpdates(satelliteId)
-                }
-                .onFailure { error ->
+                },
+                onFailure = { error ->
                     _uiState.value = SatelliteDetailUiState.Error(
                         error.message ?: "Unknown error occurred"
                     )
                 }
+            )
         }
     }
 
     private suspend fun loadSatelliteData(satelliteId: Int): Result<Pair<Satellite, SatelliteDetail>> {
-        return runCatching {
+        return try {
             val satellite = findSatelliteById(satelliteId)
-            val detailResult = getSatelliteDetailUseCase(satelliteId)
-
-            if (detailResult.isFailure) {
-                throw detailResult.exceptionOrNull() ?: Exception("Failed to load satellite detail")
-            }
-
-            val satelliteDetail = detailResult.getOrThrow()
-            satellite to satelliteDetail
+            getSatelliteDetailUseCase(satelliteId).fold(
+                onSuccess = { satelliteDetail ->
+                    Result.success(satellite to satelliteDetail)
+                },
+                onFailure = { error ->
+                    Result.failure(error)
+                }
+            )
+        } catch (error: Exception) {
+            Result.failure(error)
         }
     }
 
@@ -66,11 +69,11 @@ class SatelliteDetailViewModel @Inject constructor(
 
     private fun startPositionUpdates(satelliteId: Int) {
         viewModelScope.launch {
-            runCatching {
+            try {
                 getSatellitePositionsUseCase(satelliteId).collect { position ->
                     updateCurrentPosition(position)
                 }
-            }.onFailure { error ->
+            } catch (error: Exception) {
                 _uiState.value = SatelliteDetailUiState.Error(
                     "Failed to load position updates: ${error.message}"
                 )

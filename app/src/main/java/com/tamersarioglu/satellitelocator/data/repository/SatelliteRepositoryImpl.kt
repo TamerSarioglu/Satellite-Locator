@@ -59,7 +59,7 @@ class SatelliteRepositoryImpl @Inject constructor(
             val positionsResponse = remoteDataSource.getPositions()
             val allPositions = positionsResponse.list.toSatellitePositionList()
             allPositions.filter { it.satelliteId == satelliteId }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }

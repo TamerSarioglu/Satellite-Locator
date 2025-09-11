@@ -10,12 +10,7 @@ import javax.inject.Singleton
 class GetSatellitesUseCase @Inject constructor(
     private val repository: SatelliteRepository
 ) {
-
     suspend operator fun invoke(): Flow<List<Satellite>> {
         return repository.getAllSatellites()
-    }
-
-    suspend fun refresh() {
-        repository.refreshSatellites()
     }
 }

@@ -16,12 +16,10 @@ class GetSatelliteDetailUseCase @Inject constructor(
             if (detail != null) {
                 Result.success(detail)
             } else {
-                Result.failure(SatelliteDetailNotFoundException("Satellite detail not found for ID: $satelliteId"))
+                Result.failure(IllegalArgumentException("Satellite detail not found for ID: $satelliteId"))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 }
-//TODO: Gerekli mi?
-class SatelliteDetailNotFoundException(message: String) : Exception(message)
