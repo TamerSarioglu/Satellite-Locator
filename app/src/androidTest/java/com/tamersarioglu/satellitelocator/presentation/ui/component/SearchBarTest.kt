@@ -2,6 +2,7 @@ package com.tamersarioglu.satellitelocator.presentation.ui.component
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -10,27 +11,15 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SearchBarTest {
 
-    @get:Rule(order = 0)
-    val hiltRule = HiltAndroidRule(this)
-
-    @get:Rule(order = 1)
+    @get:Rule
     val composeTestRule = createComposeRule()
-
-    @Before
-    fun setup() {
-        hiltRule.inject()
-    }
 
     @Test
     fun searchBar_displaysAllElements() {
@@ -59,7 +48,7 @@ class SearchBarTest {
         composeTestRule.setContent {
             MaterialTheme {
                 SearchBar(
-                    query = "",
+                    query = capturedQuery,
                     onQueryChange = { query ->
                         capturedQuery = query
                     }
@@ -98,5 +87,119 @@ class SearchBarTest {
         composeTestRule
             .onNodeWithContentDescription("Clear search")
             .performClick()
+    }
+
+    @Test
+    fun searchBar_hidesClearButtonWhenQueryEmpty() {
+        composeTestRule.setContent {
+            MaterialTheme {
+                SearchBar(
+                    query = "",
+                    onQueryChange = { }
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("Clear search")
+            .assertIsNotDisplayed()
+    }
+
+    @Test
+    fun searchBar_clearButtonTriggersOnQueryChange() {
+        var currentQuery = "test query"
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                SearchBar(
+                    query = currentQuery,
+                    onQueryChange = { query ->
+                        currentQuery = query
+                    }
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("Clear search")
+            .performClick()
+    }
+
+    @Test
+    fun searchBar_displaysEnteredQuery() {
+        val testQuery = "Falcon Heavy"
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                SearchBar(
+                    query = testQuery,
+                    onQueryChange = { }
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithText(testQuery)
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun searchBar_handlesLongQuery() {
+        val longQuery = "This is a very long search query that might cause text overflow"
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                SearchBar(
+                    query = longQuery,
+                    onQueryChange = { }
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithText(longQuery)
+            .assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithContentDescription("Clear search")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun searchBar_handlesSpecialCharacters() {
+        val specialQuery = "SpaceX-01 & Falcon@2023"
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                SearchBar(
+                    query = specialQuery,
+                    onQueryChange = { }
+                )
+            }
+        }
+
+        composeTestRule
+            .onNodeWithText(specialQuery)
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun searchBar_allowsTextClearance() {
+        var currentQuery = "Initial Query"
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                SearchBar(
+                    query = currentQuery,
+                    onQueryChange = { query ->
+                        currentQuery = query
+                    }
+                )
+            }
+        }
+
+        composeTestRule
+            .onNode(hasSetTextAction())
+            .performTextClearance()
     }
 }
