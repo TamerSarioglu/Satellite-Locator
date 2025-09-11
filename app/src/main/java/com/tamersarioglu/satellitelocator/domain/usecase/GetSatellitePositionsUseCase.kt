@@ -5,35 +5,32 @@ import com.tamersarioglu.satellitelocator.domain.repository.SatelliteRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.coroutineContext
 
 @Singleton
 class GetSatellitePositionsUseCase @Inject constructor(
     private val repository: SatelliteRepository
 ) {
 
-    suspend operator fun invoke(satelliteId: Int): Flow<Position> = flow {
-        try {
-            val satellitePositions = repository.getPositionsForSatellite(satelliteId)
+    operator fun invoke(satelliteId: Int): Flow<Position> = flow {
+        val satellitePositions = repository.getPositionsForSatellite(satelliteId)
+        if (satellitePositions.isEmpty()) {
+            throw IllegalArgumentException("No positions found for satellite ID: $satelliteId")
+        }
 
-            if (satellitePositions.isNotEmpty()) {
-                val positions = satellitePositions.first().positions
+        val positions = satellitePositions.first().positions
+        if (positions.isEmpty()) {
+            throw IllegalArgumentException("Empty positions list for satellite ID: $satelliteId")
+        }
 
-                for (position in positions) {
-                    emit(position)
-                    delay(3000)
-                }
-
-                while (true) {
-                    for (position in positions) {
-                        emit(position)
-                        delay(3000)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            throw e
+        var currentIndex = 0
+        while (coroutineContext.isActive) {
+            emit(positions[currentIndex])
+            delay(3000)
+            currentIndex = (currentIndex + 1) % positions.size
         }
     }
 }

@@ -7,6 +7,3 @@ val SatelliteListUiState.satellites: List<Satellite>
 
 val SatelliteListUiState.searchQuery: String
     get() = (this as? SatelliteListUiState.Success)?.searchQuery ?: ""
-
-val SatelliteListUiState.errorMessage: String?
-    get() = (this as? SatelliteListUiState.Error)?.message
