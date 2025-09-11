@@ -1,6 +1,8 @@
 package com.tamersarioglu.satellitelocator.data.remote.asset
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -12,7 +14,7 @@ class AssetReader @Inject constructor(
     private val json: Json
 ) {
 
-    suspend fun readAssetFile(fileName: String): String {
+    fun readAssetFile(fileName: String): String {
         return context.assets.open(fileName).use { inputStream ->
             inputStream.bufferedReader().use { reader ->
                 reader.readText()
@@ -21,7 +23,9 @@ class AssetReader @Inject constructor(
     }
 
     suspend fun <T> readJsonAsset(fileName: String, deserializer: DeserializationStrategy<T>): T {
-        val jsonString = readAssetFile(fileName)
-        return json.decodeFromString(deserializer, jsonString)
+        return withContext(Dispatchers.IO) {
+            val jsonString = readAssetFile(fileName)
+            json.decodeFromString(deserializer, jsonString)
+        }
     }
 }

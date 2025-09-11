@@ -13,15 +13,6 @@ interface SatelliteDao {
     @Query("SELECT * FROM satellites ORDER BY name ASC")
     fun getAllSatellites(): Flow<List<SatelliteEntity>>
 
-    @Query("SELECT * FROM satellites WHERE id = :id")
-    suspend fun getSatelliteById(id: Int): SatelliteEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSatellites(satellites: List<SatelliteEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSatellite(satellite: SatelliteEntity)
-
-    @Query("DELETE FROM satellites")
-    suspend fun deleteAllSatellites()
 }

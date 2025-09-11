@@ -11,7 +11,7 @@ class GetSatellitesUseCase @Inject constructor(
     private val repository: SatelliteRepository
 ) {
 
-    operator fun invoke(): Flow<List<Satellite>> {
+    suspend operator fun invoke(): Flow<List<Satellite>> {
         return repository.getAllSatellites()
     }
 

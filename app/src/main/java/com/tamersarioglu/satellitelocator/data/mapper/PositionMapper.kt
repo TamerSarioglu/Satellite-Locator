@@ -4,31 +4,23 @@ import com.tamersarioglu.satellitelocator.data.model.PositionDto
 import com.tamersarioglu.satellitelocator.data.model.SatellitePositionDto
 import com.tamersarioglu.satellitelocator.domain.model.Position
 import com.tamersarioglu.satellitelocator.domain.model.SatellitePosition
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PositionMapper @Inject constructor() {
-
-    fun toDomain(dto: PositionDto): Position {
-        return Position(
-            x = dto.posX,
-            y = dto.posY
-        )
-    }
-
-    fun toDomain(dto: SatellitePositionDto): SatellitePosition {
-        return SatellitePosition(
-            satelliteId = dto.id.toInt(),
-            positions = dto.positions.map { toDomain(it) }
-        )
-    }
-
-    fun toDomainList(dtos: List<PositionDto>): List<Position> {
-        return dtos.map { toDomain(it) }
-    }
-
-    fun toSatellitePositionList(dtos: List<SatellitePositionDto>): List<SatellitePosition> {
-        return dtos.map { toDomain(it) }
-    }
+// DTO -> Domain
+fun PositionDto.toDomain(): Position {
+    return Position(
+        x = posX,
+        y = posY
+    )
 }
+
+// SatellitePositionDto -> SatellitePosition
+fun SatellitePositionDto.toDomain(): SatellitePosition {
+    return SatellitePosition(
+        satelliteId = id.toInt(),
+        positions = positions.map { it.toDomain() }
+    )
+}
+
+// List Extensions
+fun List<SatellitePositionDto>.toSatellitePositionList(): List<SatellitePosition> =
+    map { it.toDomain() }

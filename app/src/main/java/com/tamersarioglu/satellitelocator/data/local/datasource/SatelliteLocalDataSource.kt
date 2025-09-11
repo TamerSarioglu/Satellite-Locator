@@ -18,32 +18,15 @@ class SatelliteLocalDataSource @Inject constructor(
         return satelliteDao.getAllSatellites()
     }
 
-    suspend fun getSatelliteById(id: Int): SatelliteEntity? {
-        return satelliteDao.getSatelliteById(id)
-    }
-
     suspend fun insertSatellites(satellites: List<SatelliteEntity>) {
         satelliteDao.insertSatellites(satellites)
-    }
-
-    suspend fun insertSatellite(satellite: SatelliteEntity) {
-        satelliteDao.insertSatellite(satellite)
     }
 
     suspend fun getSatelliteDetailById(id: Int): SatelliteDetailEntity? {
         return satelliteDetailDao.getSatelliteDetailById(id)
     }
 
-    suspend fun insertSatelliteDetail(satelliteDetail: SatelliteDetailEntity) {
-        satelliteDetailDao.insertSatelliteDetail(satelliteDetail)
-    }
-
     suspend fun insertSatelliteDetails(satelliteDetails: List<SatelliteDetailEntity>) {
         satelliteDetailDao.insertSatelliteDetails(satelliteDetails)
-    }
-
-    suspend fun clearCache() {
-        satelliteDao.deleteAllSatellites()
-        satelliteDetailDao.deleteAllSatelliteDetails()
     }
 }
