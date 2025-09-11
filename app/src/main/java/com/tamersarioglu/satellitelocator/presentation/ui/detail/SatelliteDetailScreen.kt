@@ -19,20 +19,37 @@ import com.tamersarioglu.satellitelocator.presentation.ui.component.ErrorState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.LoadingState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteDetailContent
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteDetailTopBar
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SatelliteDetailScreen(
     satelliteId: Int,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: SatelliteDetailViewModel = hiltViewModel()
 ) {
+    val viewModel: SatelliteDetailViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(satelliteId) {
         viewModel.loadSatelliteDetail(satelliteId)
+    }
+
+    LaunchedEffect(viewModel.uiEffect) {
+        viewModel.uiEffect.collectLatest { effect ->
+            when (effect) {
+                is SatelliteDetailUiEffect.ShowError -> {
+                    snackbarHostState.showSnackbar(effect.message)
+                }
+
+                is SatelliteDetailUiEffect.ShowSuccess -> {
+                    snackbarHostState.showSnackbar(effect.message)
+                }
+                is SatelliteDetailUiEffect.NavigateBack -> {
+                    onBackClick()
+                }
+            }
+        }
     }
 
     LaunchedEffect(uiState) {
@@ -46,11 +63,12 @@ fun SatelliteDetailScreen(
         topBar = {
             SatelliteDetailTopBar(
                 title = uiState.satellite?.name ?: "Loading...",
-                onBackClick = onBackClick
+                onBackClick = {
+                    viewModel.onEvent(SatelliteDetailEvent.NavigateBack)
+                }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = modifier
     ) { paddingValues ->
         when (val state = uiState) {
             is SatelliteDetailUiState.Loading -> {
