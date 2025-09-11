@@ -25,6 +25,7 @@ import com.tamersarioglu.satellitelocator.presentation.ui.component.ErrorState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.LoadingState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteList
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SearchBar
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SatelliteListScreen(
@@ -33,6 +34,22 @@ fun SatelliteListScreen(
     val viewModel: SatelliteListViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel.uiEffect) {
+        viewModel.uiEffect.collectLatest { effect ->
+            when (effect) {
+                is SatelliteListUiEffect.ShowError -> {
+                    snackbarHostState.showSnackbar(effect.message)
+                }
+                is SatelliteListUiEffect.ShowSuccess -> {
+                    snackbarHostState.showSnackbar(effect.message)
+                }
+                is SatelliteListUiEffect.NavigateToSatelliteDetail -> {
+                    onSatelliteClick(effect.satelliteId)
+                }
+            }
+        }
+    }
 
     LaunchedEffect(uiState) {
         val currentState = uiState
@@ -48,7 +65,9 @@ fun SatelliteListScreen(
             if (uiState is SatelliteListUiState.Success) {
                 SearchBar(
                     query = uiState.searchQuery,
-                    onQueryChange = viewModel::onSearchQueryChange,
+                    onQueryChange = { query ->
+                        viewModel.onEvent(SatelliteListEvent.SearchQueryChanged(query))
+                    },
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -70,7 +89,7 @@ fun SatelliteListScreen(
                 is SatelliteListUiState.Success -> {
                     SatelliteListContent(
                         state = state,
-                        onSatelliteClick = onSatelliteClick
+                        viewModel = viewModel
                     )
                 }
             }
@@ -86,7 +105,7 @@ fun SatelliteListScreen(
 @Composable
 private fun SatelliteListContent(
     state: SatelliteListUiState.Success,
-    onSatelliteClick: (Int) -> Unit
+    viewModel: SatelliteListViewModel
 ) {
     when {
         state.displaySatellites.isEmpty() && state.searchQuery.isNotBlank() -> {
@@ -108,7 +127,11 @@ private fun SatelliteListContent(
         else -> {
             SatelliteList(
                 satellites = state.displaySatellites,
-                onSatelliteClick = onSatelliteClick
+                onSatelliteClick = { satelliteId ->
+                    viewModel.onEvent(
+                        SatelliteListEvent.NavigateToSatelliteDetail(satelliteId)
+                    )
+                }
             )
         }
     }
