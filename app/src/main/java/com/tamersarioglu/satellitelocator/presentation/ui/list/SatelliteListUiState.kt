@@ -7,21 +7,9 @@ sealed class SatelliteListUiState {
 
     data class Success(
         val satellites: List<Satellite>,
+        val displaySatellites: List<Satellite>,
         val searchQuery: String = ""
-    ) : SatelliteListUiState() {
-        val filteredSatellites: List<Satellite>
-            get() = if (searchQuery.isBlank()) {
-                satellites
-            } else {
-                val trimmedQuery = searchQuery.trim().lowercase()
-                satellites.filter { satellite ->
-                    satellite.name.lowercase().contains(trimmedQuery)
-                }
-            }
-
-        val displaySatellites: List<Satellite>
-            get() = filteredSatellites
-    }
+    ) : SatelliteListUiState()
 
     data class Error(val message: String) : SatelliteListUiState()
 }
