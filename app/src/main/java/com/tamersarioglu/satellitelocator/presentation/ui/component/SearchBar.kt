@@ -10,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,10 +25,9 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SearchBar(
+    modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    placeholder: String = "Search satellites..."
 ) {
     var localQuery by remember { mutableStateOf(query) }
 
@@ -50,7 +50,7 @@ fun SearchBar(
         modifier = modifier.fillMaxWidth(),
         placeholder = {
             Text(
-                text = placeholder,
+                text = "Search satellites...",
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
@@ -77,8 +77,15 @@ fun SearchBar(
                 }
             }
         },
-        shape = RoundedCornerShape(12.dp),
-        singleLine = true
+        shape = RoundedCornerShape(16.dp),
+        singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.3f),
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.1f),
+            cursorColor = MaterialTheme.colorScheme.primary
+        )
     )
 }
 
@@ -88,6 +95,18 @@ private fun SearchBarPreview() {
     MaterialTheme {
         SearchBar(
             query = "Starship",
+            onQueryChange = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun SearchBarEmptyPreview() {
+    MaterialTheme {
+        SearchBar(
+            query = "",
             onQueryChange = {},
             modifier = Modifier.padding(16.dp)
         )

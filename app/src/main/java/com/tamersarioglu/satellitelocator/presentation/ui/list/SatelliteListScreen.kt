@@ -1,36 +1,36 @@
 package com.tamersarioglu.satellitelocator.presentation.ui.list
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteListItem
+import com.tamersarioglu.satellitelocator.presentation.ui.component.EmptyState
+import com.tamersarioglu.satellitelocator.presentation.ui.component.ErrorState
+import com.tamersarioglu.satellitelocator.presentation.ui.component.LoadingState
+import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteList
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SearchBar
 
 @Composable
 fun SatelliteListScreen(
     onSatelliteClick: (Int) -> Unit,
 ) {
-    val viewModel:SatelliteListViewModel = hiltViewModel()
+    val viewModel: SatelliteListViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -55,79 +55,23 @@ fun SatelliteListScreen(
 
             when (val state = uiState) {
                 is SatelliteListUiState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+                    LoadingState(
+                        message = "Loading satellites..."
+                    )
                 }
 
                 is SatelliteListUiState.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Failed to load satellites",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    ErrorState(
+                        title = "Failed to Load Satellites",
+                        message = "Unable to load satellite data. Please check your connection and try again."
+                    )
                 }
 
                 is SatelliteListUiState.Success -> {
-                    when {
-                        state.displaySatellites.isEmpty() && state.searchQuery.isNotBlank() -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No satellites found for \"${state.searchQuery}\"",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        state.displaySatellites.isEmpty() -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = "No satellites available",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        else -> {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                items(state.displaySatellites) { satellite ->
-                                    SatelliteListItem(
-                                        satellite = satellite,
-                                        onItemClick = onSatelliteClick
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    SatelliteListContent(
+                        state = state,
+                        onSatelliteClick = onSatelliteClick
+                    )
                 }
             }
         }
@@ -136,6 +80,37 @@ fun SatelliteListScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+}
+
+@Composable
+private fun SatelliteListContent(
+    state: SatelliteListUiState.Success,
+    onSatelliteClick: (Int) -> Unit
+) {
+    when {
+        state.displaySatellites.isEmpty() && state.searchQuery.isNotBlank() -> {
+            EmptyState(
+                icon = Icons.Filled.Search,
+                title = "No Results Found",
+                subtitle = "No satellites match \"${state.searchQuery}\". Try a different search term."
+            )
+        }
+
+        state.displaySatellites.isEmpty() -> {
+            EmptyState(
+                icon = Icons.Filled.Info,
+                title = "No Satellites Available",
+                subtitle = "There are currently no satellites to display."
+            )
+        }
+
+        else -> {
+            SatelliteList(
+                satellites = state.displaySatellites,
+                onSatelliteClick = onSatelliteClick
+            )
+        }
     }
 }
 

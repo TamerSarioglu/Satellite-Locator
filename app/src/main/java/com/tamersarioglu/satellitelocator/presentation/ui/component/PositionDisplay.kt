@@ -23,8 +23,8 @@ import com.tamersarioglu.satellitelocator.domain.model.Position
 
 @Composable
 fun PositionDisplay(
+    modifier: Modifier = Modifier,
     position: Position?,
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -34,7 +34,7 @@ fun PositionDisplay(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -43,7 +43,7 @@ fun PositionDisplay(
             Icon(
                 imageVector = Icons.Default.LocationOn,
                 contentDescription = "Position",
-                modifier = Modifier.size(24.dp),
+                modifier = modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
 
