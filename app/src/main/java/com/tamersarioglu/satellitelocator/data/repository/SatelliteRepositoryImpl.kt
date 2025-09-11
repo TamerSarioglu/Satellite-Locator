@@ -1,9 +1,10 @@
 package com.tamersarioglu.satellitelocator.data.repository
 
 import com.tamersarioglu.satellitelocator.data.local.datasource.SatelliteLocalDataSource
-import com.tamersarioglu.satellitelocator.data.mapper.PositionMapper
-import com.tamersarioglu.satellitelocator.data.mapper.SatelliteDetailMapper
-import com.tamersarioglu.satellitelocator.data.mapper.SatelliteMapper
+import com.tamersarioglu.satellitelocator.data.mapper.toDomain
+import com.tamersarioglu.satellitelocator.data.mapper.toDomainList
+import com.tamersarioglu.satellitelocator.data.mapper.toEntityList
+import com.tamersarioglu.satellitelocator.data.mapper.toSatellitePositionList
 import com.tamersarioglu.satellitelocator.data.remote.datasource.SatelliteRemoteDataSource
 import com.tamersarioglu.satellitelocator.domain.model.Satellite
 import com.tamersarioglu.satellitelocator.domain.model.SatelliteDetail
@@ -17,23 +18,19 @@ import javax.inject.Singleton
 @Singleton
 class SatelliteRepositoryImpl @Inject constructor(
     private val remoteDataSource: SatelliteRemoteDataSource,
-    private val localDataSource: SatelliteLocalDataSource,
-    private val satelliteMapper: SatelliteMapper,
-    private val satelliteDetailMapper: SatelliteDetailMapper,
-    private val positionMapper: PositionMapper
+    private val localDataSource: SatelliteLocalDataSource
 ) : SatelliteRepository {
 
-    override fun getAllSatellites(): Flow<List<Satellite>> {
+    override suspend fun getAllSatellites(): Flow<List<Satellite>> {
         return localDataSource.getAllSatellites()
-            .map { entities ->
-                satelliteMapper.entitiesToDomainList(entities)
-            }
+            .map { entities -> entities.toDomainList() }
     }
 
     override suspend fun refreshSatellites() {
         try {
             val remoteSatellites = remoteDataSource.getSatellites()
-            val entities = satelliteMapper.dtosToEntityList(remoteSatellites)
+            val entities = remoteSatellites.toEntityList()
+
             localDataSource.insertSatellites(entities)
         } catch (e: Exception) {
             throw e
@@ -43,17 +40,15 @@ class SatelliteRepositoryImpl @Inject constructor(
     override suspend fun getSatelliteDetail(satelliteId: Int): SatelliteDetail? {
         val cachedDetail = localDataSource.getSatelliteDetailById(satelliteId)
         if (cachedDetail != null) {
-            return satelliteDetailMapper.toDomain(cachedDetail)
+            return cachedDetail.toDomain()
         }
 
         try {
             val remoteDetails = remoteDataSource.getSatelliteDetails()
-            val detailEntities = satelliteDetailMapper.dtosToEntityList(remoteDetails)
-            localDataSource.insertSatelliteDetails(detailEntities)
+            val detailEntities = remoteDetails.toEntityList()
 
-            return remoteDetails
-                .find { it.id == satelliteId }
-                ?.let { satelliteDetailMapper.toDomain(it) }
+            localDataSource.insertSatelliteDetails(detailEntities)
+            return remoteDetails.find { it.id == satelliteId }?.toDomain()
         } catch (e: Exception) {
             throw e
         }
@@ -62,8 +57,7 @@ class SatelliteRepositoryImpl @Inject constructor(
     override suspend fun getPositionsForSatellite(satelliteId: Int): List<SatellitePosition> {
         return try {
             val positionsResponse = remoteDataSource.getPositions()
-            val allPositions = positionMapper.toSatellitePositionList(positionsResponse.list)
-
+            val allPositions = positionsResponse.list.toSatellitePositionList()
             allPositions.filter { it.satelliteId == satelliteId }
         } catch (e: Exception) {
             emptyList()
