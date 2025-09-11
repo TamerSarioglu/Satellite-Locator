@@ -11,6 +11,7 @@ import com.tamersarioglu.satellitelocator.domain.model.SatelliteDetail
 import com.tamersarioglu.satellitelocator.domain.model.SatellitePosition
 import com.tamersarioglu.satellitelocator.domain.repository.SatelliteRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,14 +24,24 @@ class SatelliteRepositoryImpl @Inject constructor(
 
     override suspend fun getAllSatellites(): Flow<List<Satellite>> {
         return localDataSource.getAllSatellites()
-            .map { entities -> entities.toDomainList() }
+            .map { entities ->
+                if (entities.isEmpty()) {
+                    loadSatellitesFromAssets()
+                    localDataSource.getAllSatellites().first().toDomainList()
+                } else {
+                    entities.toDomainList()
+                }
+            }
     }
 
     override suspend fun refreshSatellites() {
+        loadSatellitesFromAssets()
+    }
+
+    private suspend fun loadSatellitesFromAssets() {
         try {
             val remoteSatellites = remoteDataSource.getSatellites()
             val entities = remoteSatellites.toEntityList()
-
             localDataSource.insertSatellites(entities)
         } catch (e: Exception) {
             throw e
@@ -43,12 +54,18 @@ class SatelliteRepositoryImpl @Inject constructor(
             return cachedDetail.toDomain()
         }
 
-        try {
+        return loadSatelliteDetailsFromAssets(satelliteId)
+    }
+
+    private suspend fun loadSatelliteDetailsFromAssets(satelliteId: Int? = null): SatelliteDetail? {
+        return try {
             val remoteDetails = remoteDataSource.getSatelliteDetails()
             val detailEntities = remoteDetails.toEntityList()
 
             localDataSource.insertSatelliteDetails(detailEntities)
-            return remoteDetails.find { it.id == satelliteId }?.toDomain()
+            satelliteId?.let { id ->
+                remoteDetails.find { it.id == id }?.toDomain()
+            }
         } catch (e: Exception) {
             throw e
         }
