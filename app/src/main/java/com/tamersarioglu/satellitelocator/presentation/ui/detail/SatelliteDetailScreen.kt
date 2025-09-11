@@ -1,49 +1,24 @@
 package com.tamersarioglu.satellitelocator.presentation.ui.detail
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.tamersarioglu.satellitelocator.domain.model.Position
-import com.tamersarioglu.satellitelocator.domain.model.Satellite
-import com.tamersarioglu.satellitelocator.domain.model.SatelliteDetail
-import com.tamersarioglu.satellitelocator.presentation.ui.component.PositionDisplay
-import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteDetailCard
-import java.time.LocalDate
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tamersarioglu.satellitelocator.presentation.ui.component.ErrorState
+import com.tamersarioglu.satellitelocator.presentation.ui.component.LoadingState
+import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteDetailContent
+import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteDetailTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,15 +28,13 @@ fun SatelliteDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: SatelliteDetailViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Load satellite detail when screen opens
     LaunchedEffect(satelliteId) {
         viewModel.loadSatelliteDetail(satelliteId)
     }
 
-    // Show error messages
     LaunchedEffect(uiState) {
         val currentState = uiState
         if (currentState is SatelliteDetailUiState.Error) {
@@ -71,87 +44,43 @@ fun SatelliteDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = uiState.satellite?.name ?: "Loading...",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
+            SatelliteDetailTopBar(
+                title = uiState.satellite?.name ?: "Loading...",
+                onBackClick = onBackClick
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = modifier
     ) { paddingValues ->
         when (val state = uiState) {
-
             is SatelliteDetailUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is SatelliteDetailUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Failed to load satellite details",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
-            is SatelliteDetailUiState.Success -> {
-                Column(
+                LoadingState(
+                    message = "Loading satellite details...",
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(16.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    color = if (state.satellite.isActive)
-                                        Color.Green else Color.Red
-                                )
-                        )
+                )
+            }
 
-                        Text(
-                            text = state.satellite.name,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    PositionDisplay(position = state.currentPosition)
-                    SatelliteDetailCard(satelliteDetail = state.satelliteDetail)
-                }
+            is SatelliteDetailUiState.Error -> {
+                ErrorState(
+                    title = "Failed to Load",
+                    message = "Failed to load satellite details. Please try again.",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
+            }
+
+            is SatelliteDetailUiState.Success -> {
+                SatelliteDetailContent(
+                    satellite = state.satellite,
+                    satelliteDetail = state.satelliteDetail,
+                    currentPosition = state.currentPosition,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
             }
         }
     }

@@ -94,5 +94,5 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
 
-    // Removed timber - not needed
+    implementation(libs.androidx.material.icons.extended)
 }

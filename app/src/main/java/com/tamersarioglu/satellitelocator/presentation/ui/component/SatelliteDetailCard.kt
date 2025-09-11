@@ -22,8 +22,8 @@ import java.util.Locale
 
 @Composable
 fun SatelliteDetailCard(
+    modifier: Modifier = Modifier,
     satelliteDetail: SatelliteDetail,
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -33,7 +33,7 @@ fun SatelliteDetailCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             DetailRow(
@@ -62,9 +62,9 @@ fun SatelliteDetailCard(
 
 @Composable
 private fun DetailRow(
+    modifier: Modifier = Modifier,
     label: String,
     value: String,
-    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
