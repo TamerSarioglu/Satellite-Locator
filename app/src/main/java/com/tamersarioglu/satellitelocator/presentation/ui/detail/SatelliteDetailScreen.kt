@@ -62,10 +62,10 @@ fun SatelliteDetailScreen(
     }
 
     // Show error messages
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearError()
+    LaunchedEffect(uiState) {
+        val currentState = uiState
+        if (currentState is SatelliteDetailUiState.Error) {
+            snackbarHostState.showSnackbar(currentState.message)
         }
     }
 
@@ -91,8 +91,9 @@ fun SatelliteDetailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = modifier
     ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
+        when (val state = uiState) {
+
+            is SatelliteDetailUiState.Loading -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -103,7 +104,7 @@ fun SatelliteDetailScreen(
                 }
             }
 
-            !uiState.isDataLoaded -> {
+            is SatelliteDetailUiState.Error -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -119,7 +120,7 @@ fun SatelliteDetailScreen(
                 }
             }
 
-            else -> {
+            is SatelliteDetailUiState.Success -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -128,7 +129,6 @@ fun SatelliteDetailScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Satellite name and status
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -138,25 +138,19 @@ fun SatelliteDetailScreen(
                                 .size(16.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    color = if (uiState.satellite?.isActive == true)
+                                    color = if (state.satellite.isActive)
                                         Color.Green else Color.Red
                                 )
                         )
 
                         Text(
-                            text = uiState.satellite?.name ?: "",
+                            text = state.satellite.name,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
                     }
-
-                    // Position display (real-time updates)
-                    PositionDisplay(position = uiState.currentPosition)
-
-                    // Satellite details
-                    uiState.satelliteDetail?.let { detail ->
-                        SatelliteDetailCard(satelliteDetail = detail)
-                    }
+                    PositionDisplay(position = state.currentPosition)
+                    SatelliteDetailCard(satelliteDetail = state.satelliteDetail)
                 }
             }
         }

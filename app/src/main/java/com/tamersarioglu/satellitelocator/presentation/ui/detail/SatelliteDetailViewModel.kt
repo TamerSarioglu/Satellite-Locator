@@ -2,6 +2,9 @@ package com.tamersarioglu.satellitelocator.presentation.ui.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tamersarioglu.satellitelocator.domain.model.Position
+import com.tamersarioglu.satellitelocator.domain.model.Satellite
+import com.tamersarioglu.satellitelocator.domain.model.SatelliteDetail
 import com.tamersarioglu.satellitelocator.domain.usecase.GetSatelliteDetailUseCase
 import com.tamersarioglu.satellitelocator.domain.usecase.GetSatellitePositionsUseCase
 import com.tamersarioglu.satellitelocator.domain.usecase.GetSatellitesUseCase
@@ -9,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,69 +23,65 @@ class SatelliteDetailViewModel @Inject constructor(
     private val getSatellitePositionsUseCase: GetSatellitePositionsUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SatelliteDetailUiState())
+    private val _uiState = MutableStateFlow<SatelliteDetailUiState>(SatelliteDetailUiState.Loading)
     val uiState: StateFlow<SatelliteDetailUiState> = _uiState.asStateFlow()
 
     fun loadSatelliteDetail(satelliteId: Int) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            _uiState.value = SatelliteDetailUiState.Loading
 
-            try {
-                val satellite = getSatellitesUseCase()
-                    .first()
-                    .find { it.id == satelliteId }
-
-                if (satellite == null) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "Satellite not found"
-                    )
-                    return@launch
+            loadSatelliteData(satelliteId)
+                .onSuccess { (satellite, detail) ->
+                    _uiState.value = SatelliteDetailUiState.Success(satellite, detail)
+                    startPositionUpdates(satelliteId)
                 }
-
-                val detailResult = getSatelliteDetailUseCase(satelliteId)
-                if (detailResult.isFailure) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = detailResult.exceptionOrNull()?.message
-                            ?: "Failed to load detail"
+                .onFailure { error ->
+                    _uiState.value = SatelliteDetailUiState.Error(
+                        error.message ?: "Unknown error occurred"
                     )
-                    return@launch
                 }
+        }
+    }
 
-                val satelliteDetail = detailResult.getOrNull()
-                _uiState.value = _uiState.value.copy(
-                    satellite = satellite,
-                    satelliteDetail = satelliteDetail,
-                    isLoading = false
-                )
+    private suspend fun loadSatelliteData(satelliteId: Int): Result<Pair<Satellite, SatelliteDetail>> {
+        return runCatching {
+            val satellite = findSatelliteById(satelliteId)
+            val detailResult = getSatelliteDetailUseCase(satelliteId)
 
-                startPositionUpdates(satelliteId)
+            if (detailResult.isFailure) {
+                throw detailResult.exceptionOrNull() ?: Exception("Failed to load satellite detail")
+            }
 
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    errorMessage = e.message ?: "Unknown error occurred"
+            val satelliteDetail = detailResult.getOrThrow()
+            satellite to satelliteDetail
+        }
+    }
+
+    private suspend fun findSatelliteById(satelliteId: Int): Satellite {
+        return getSatellitesUseCase()
+            .first()
+            .find { it.id == satelliteId }
+            ?: throw Exception("Satellite not found")
+    }
+
+    private fun startPositionUpdates(satelliteId: Int) {
+        viewModelScope.launch {
+            runCatching {
+                getSatellitePositionsUseCase(satelliteId).collect { position ->
+                    updateCurrentPosition(position)
+                }
+            }.onFailure { error ->
+                _uiState.value = SatelliteDetailUiState.Error(
+                    "Failed to load position updates: ${error.message}"
                 )
             }
         }
     }
 
-    private fun startPositionUpdates(satelliteId: Int) {
-        viewModelScope.launch {
-            getSatellitePositionsUseCase(satelliteId)
-                .catch { e ->
-                    _uiState.value = _uiState.value.copy(
-                        errorMessage = "Failed to load position updates: ${e.message}"
-                    )
-                }
-                .collect { position ->
-                    _uiState.value = _uiState.value.copy(currentPosition = position)
-                }
+    private fun updateCurrentPosition(position: Position) {
+        val currentState = _uiState.value
+        if (currentState is SatelliteDetailUiState.Success) {
+            _uiState.value = currentState.copy(currentPosition = position)
         }
-    }
-
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 }
