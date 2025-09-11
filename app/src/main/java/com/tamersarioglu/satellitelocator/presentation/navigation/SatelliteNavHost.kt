@@ -12,13 +12,11 @@ import com.tamersarioglu.satellitelocator.presentation.ui.list.SatelliteListScre
 
 @Composable
 fun SatelliteNavHost(
-    modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
         startDestination = SatelliteDestination.SatelliteList,
-        modifier = modifier
     ) {
         composable<SatelliteDestination.SatelliteList> {
             SatelliteListScreen(

@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.collectLatest
 fun SatelliteDetailScreen(
     satelliteId: Int,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val viewModel: SatelliteDetailViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,7 +69,6 @@ fun SatelliteDetailScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = modifier
     ) { paddingValues ->
         when (val state = uiState) {
             is SatelliteDetailUiState.Loading -> {
