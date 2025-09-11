@@ -1,6 +1,5 @@
 package com.tamersarioglu.satellitelocator.presentation.ui.list
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,13 +7,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,9 +57,16 @@ fun SatelliteListScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             if (uiState is SatelliteListUiState.Success) {
                 SearchBar(
@@ -87,52 +93,36 @@ fun SatelliteListScreen(
                 }
 
                 is SatelliteListUiState.Success -> {
-                    SatelliteListContent(
-                        state = state,
-                        viewModel = viewModel
-                    )
+                    when {
+                        state.displaySatellites.isEmpty() && state.searchQuery.isNotBlank() -> {
+                            EmptyState(
+                                icon = Icons.Filled.Search,
+                                title = "No Results Found",
+                                subtitle = "No satellites match \"${state.searchQuery}\". Try a different search term."
+                            )
+                        }
+
+                        state.displaySatellites.isEmpty() -> {
+                            EmptyState(
+                                icon = Icons.Filled.Info,
+                                title = "No Satellites Available",
+                                subtitle = "There are currently no satellites to display."
+                            )
+                        }
+
+                        else -> {
+                            SatelliteList(
+                                satellites = state.displaySatellites,
+                                onSatelliteClick = { satelliteId ->
+                                    viewModel.onEvent(
+                                        SatelliteListEvent.NavigateToSatelliteDetail(satelliteId)
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
-        }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
-    }
-}
-
-@Composable
-private fun SatelliteListContent(
-    state: SatelliteListUiState.Success,
-    viewModel: SatelliteListViewModel
-) {
-    when {
-        state.displaySatellites.isEmpty() && state.searchQuery.isNotBlank() -> {
-            EmptyState(
-                icon = Icons.Filled.Search,
-                title = "No Results Found",
-                subtitle = "No satellites match \"${state.searchQuery}\". Try a different search term."
-            )
-        }
-
-        state.displaySatellites.isEmpty() -> {
-            EmptyState(
-                icon = Icons.Filled.Info,
-                title = "No Satellites Available",
-                subtitle = "There are currently no satellites to display."
-            )
-        }
-
-        else -> {
-            SatelliteList(
-                satellites = state.displaySatellites,
-                onSatelliteClick = { satelliteId ->
-                    viewModel.onEvent(
-                        SatelliteListEvent.NavigateToSatelliteDetail(satelliteId)
-                    )
-                }
-            )
         }
     }
 }
