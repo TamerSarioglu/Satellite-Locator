@@ -72,7 +72,7 @@ class SatelliteListViewModelTest {
         viewModel.uiState.test {
             skipItems(2)
 
-            viewModel.onSearchQueryChange("Starship")
+            viewModel.onEvent(SatelliteListEvent.SearchQueryChanged("Starship"))
 
             val updatedState = awaitItem() as SatelliteListUiState.Success
             assertThat(updatedState.searchQuery).isEqualTo("Starship")
