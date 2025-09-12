@@ -1,7 +1,6 @@
 package com.tamersarioglu.satellitelocator.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,6 +13,7 @@ import com.tamersarioglu.satellitelocator.presentation.ui.list.SatelliteListScre
 fun SatelliteNavHost(
     navController: NavHostController = rememberNavController()
 ) {
+    BackPressControlOnListScreen(navController)
     NavHost(
         navController = navController,
         startDestination = SatelliteDestination.SatelliteList,
