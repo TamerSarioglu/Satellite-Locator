@@ -6,9 +6,7 @@ import com.tamersarioglu.satellitelocator.data.local.entity.SatelliteDetailEntit
 import com.tamersarioglu.satellitelocator.data.local.entity.SatelliteEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class SatelliteLocalDataSource @Inject constructor(
     private val satelliteDao: SatelliteDao,
     private val satelliteDetailDao: SatelliteDetailDao

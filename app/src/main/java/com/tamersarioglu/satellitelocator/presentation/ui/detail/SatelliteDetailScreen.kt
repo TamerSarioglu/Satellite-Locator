@@ -19,6 +19,7 @@ import com.tamersarioglu.satellitelocator.presentation.ui.component.ErrorState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.LoadingState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteDetailContent
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteDetailTopBar
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,7 +63,7 @@ fun SatelliteDetailScreen(
     Scaffold(
         topBar = {
             SatelliteDetailTopBar(
-                title = uiState.satellite?.name ?: "Loading...",
+                title = uiState.satellite?.name ?: AppConfig.LOADING_DEFAULT,
                 onBackClick = {
                     viewModel.onEvent(SatelliteDetailEvent.NavigateBack)
                 }
@@ -73,7 +74,7 @@ fun SatelliteDetailScreen(
         when (val state = uiState) {
             is SatelliteDetailUiState.Loading -> {
                 LoadingState(
-                    message = "Loading satellite details...",
+                    message = AppConfig.LOADING_SATELLITE_DETAILS,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
@@ -82,8 +83,8 @@ fun SatelliteDetailScreen(
 
             is SatelliteDetailUiState.Error -> {
                 ErrorState(
-                    title = "Failed to Load",
-                    message = "Failed to load satellite details. Please try again.",
+                    title = AppConfig.ERROR_FAILED_TO_LOAD_TITLE,
+                    message = AppConfig.ERROR_FAILED_TO_LOAD_SATELLITE_DETAILS,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)

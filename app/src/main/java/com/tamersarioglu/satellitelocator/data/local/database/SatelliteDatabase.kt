@@ -16,7 +16,6 @@ import com.tamersarioglu.satellitelocator.data.local.entity.SatelliteDetailEntit
     exportSchema = false
 )
 abstract class SatelliteDatabase : RoomDatabase() {
-
     abstract fun satelliteDao(): SatelliteDao
     abstract fun satelliteDetailDao(): SatelliteDetailDao
 }

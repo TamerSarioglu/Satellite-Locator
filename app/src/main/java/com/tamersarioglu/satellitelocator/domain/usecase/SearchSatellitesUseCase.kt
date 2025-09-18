@@ -2,9 +2,7 @@ package com.tamersarioglu.satellitelocator.domain.usecase
 
 import com.tamersarioglu.satellitelocator.domain.model.Satellite
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class SearchSatellitesUseCase @Inject constructor() {
 
     operator fun invoke(

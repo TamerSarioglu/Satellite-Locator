@@ -8,6 +8,7 @@ import com.tamersarioglu.satellitelocator.domain.model.SatelliteDetail
 import com.tamersarioglu.satellitelocator.domain.usecase.GetSatelliteDetailUseCase
 import com.tamersarioglu.satellitelocator.domain.usecase.GetSatellitePositionsUseCase
 import com.tamersarioglu.satellitelocator.domain.usecase.GetSatellitesUseCase
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -55,11 +56,11 @@ class SatelliteDetailViewModel @Inject constructor(
                 },
                 onFailure = { error ->
                     _uiState.value = SatelliteDetailUiState.Error(
-                        error.message ?: "Unknown error occurred"
+                        error.message ?: AppConfig.ERROR_UNKNOWN_OCCURRED
                     )
                     sendUiEffect(
                         SatelliteDetailUiEffect.ShowError(
-                            error.message ?: "Failed to load satellite detail"
+                            error.message ?: AppConfig.ERROR_FAILED_TO_LOAD_SATELLITE_DETAILS
                         )
                     )
                 }
@@ -71,7 +72,7 @@ class SatelliteDetailViewModel @Inject constructor(
         currentSatelliteId?.let { satelliteId ->
             positionUpdateJob?.cancel()
             startPositionUpdates(satelliteId)
-            sendUiEffect(SatelliteDetailUiEffect.ShowSuccess("Position refreshed"))
+            sendUiEffect(SatelliteDetailUiEffect.ShowSuccess(AppConfig.SUCCESS_POSITION_REFRESHED))
         }
     }
 
@@ -105,7 +106,7 @@ class SatelliteDetailViewModel @Inject constructor(
         return getSatellitesUseCase()
             .first()
             .find { it.id == satelliteId }
-            ?: throw Exception("Satellite not found")
+            ?: throw Exception(AppConfig.ERROR_SATELLITE_NOT_FOUND)
     }
 
     private fun startPositionUpdates(satelliteId: Int) {
@@ -117,11 +118,11 @@ class SatelliteDetailViewModel @Inject constructor(
                 }
             } catch (error: Exception) {
                 _uiState.value = SatelliteDetailUiState.Error(
-                    "Failed to load position updates: ${error.message}"
+                    "${AppConfig.ERROR_FAILED_TO_LOAD_POSITION_UPDATES}: ${error.message}"
                 )
                 sendUiEffect(
                     SatelliteDetailUiEffect.ShowError(
-                        "Failed to load position updates: ${error.message}"
+                        "${AppConfig.ERROR_FAILED_TO_LOAD_POSITION_UPDATES}: ${error.message}"
                     )
                 )
             }

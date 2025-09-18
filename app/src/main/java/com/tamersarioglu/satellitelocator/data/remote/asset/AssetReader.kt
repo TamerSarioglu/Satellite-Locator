@@ -6,9 +6,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class AssetReader @Inject constructor(
     private val context: Context,
     private val json: Json

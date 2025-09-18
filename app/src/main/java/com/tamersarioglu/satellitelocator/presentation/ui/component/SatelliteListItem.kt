@@ -23,11 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tamersarioglu.satellitelocator.domain.model.Satellite
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 
 @Composable
 fun SatelliteListItem(
@@ -43,12 +43,12 @@ fun SatelliteListItem(
 
     val statusAlpha by animateFloatAsState(
         targetValue = if (satellite.isActive) 1f else 0.7f,
-        label = "statusAlpha"
+        label = AppConfig.ANIMATION_STATUS_ALPHA
     )
 
     val scale by animateFloatAsState(
         targetValue = if (satellite.isActive) 1f else 0.8f,
-        label = "statusScale"
+        label = AppConfig.ANIMATION_STATUS_SCALE
     )
 
     Card(
@@ -93,7 +93,7 @@ fun SatelliteListItem(
                 )
 
                 Text(
-                    text = if (satellite.isActive) "Active" else "Passive",
+                    text = if (satellite.isActive) AppConfig.STATUS_ACTIVE else AppConfig.STATUS_PASSIVE,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = statusColor

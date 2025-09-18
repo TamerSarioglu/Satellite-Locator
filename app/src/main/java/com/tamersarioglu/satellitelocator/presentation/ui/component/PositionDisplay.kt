@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tamersarioglu.satellitelocator.domain.model.Position
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 
 @Composable
 fun PositionDisplay(
@@ -42,7 +43,7 @@ fun PositionDisplay(
         ) {
             Icon(
                 imageVector = Icons.Default.LocationOn,
-                contentDescription = "Position",
+                contentDescription = AppConfig.CONTENT_DESC_POSITION,
                 modifier = modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -51,7 +52,7 @@ fun PositionDisplay(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Last Position",
+                    text = AppConfig.LABEL_LAST_POSITION,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Normal
@@ -59,9 +60,9 @@ fun PositionDisplay(
 
                 if (position != null) {
                     Text(
-                        text = "(${String.format("%.3f", position.x)}, ${
+                        text = "(${String.format(AppConfig.COORDINATE_FORMAT, position.x)}, ${
                             String.format(
-                                "%.3f",
+                                AppConfig.COORDINATE_FORMAT,
                                 position.y
                             )
                         })",
@@ -71,7 +72,7 @@ fun PositionDisplay(
                     )
                 } else {
                     Text(
-                        text = "Loading...",
+                        text = AppConfig.LOADING_DEFAULT,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontWeight = FontWeight.Normal

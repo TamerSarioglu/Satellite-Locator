@@ -18,24 +18,35 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import com.tamersarioglu.satellitelocator.utils.AppConfig
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 
+@OptIn(FlowPreview::class)
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
+    placeholder: String = AppConfig.DEFAULT_SEARCH_PLACEHOLDER,
+    debounceMs: Long = AppConfig.SEARCH_DEBOUNCE_MS
 ) {
     var localQuery by remember { mutableStateOf(query) }
 
-    LaunchedEffect(localQuery) {
-        delay(300)
-        if (localQuery != query) {
-            onQueryChange(localQuery)
-        }
+    LaunchedEffect(Unit) {
+        snapshotFlow { localQuery }
+            .distinctUntilChanged()
+            .debounce(debounceMs)
+            .collect { debouncedQuery ->
+                if (debouncedQuery != query) {
+                    onQueryChange(debouncedQuery)
+                }
+            }
     }
 
     LaunchedEffect(query) {
@@ -50,14 +61,14 @@ fun SearchBar(
         modifier = modifier.fillMaxWidth(),
         placeholder = {
             Text(
-                text = "Search satellites...",
+                text = placeholder,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search",
+                contentDescription = AppConfig.CONTENT_DESC_SEARCH,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
@@ -71,7 +82,7 @@ fun SearchBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear search",
+                        contentDescription = AppConfig.CONTENT_DESC_CLEAR_SEARCH,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

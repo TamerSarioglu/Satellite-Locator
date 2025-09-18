@@ -24,6 +24,7 @@ import com.tamersarioglu.satellitelocator.presentation.ui.component.ErrorState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.LoadingState
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SatelliteList
 import com.tamersarioglu.satellitelocator.presentation.ui.component.SearchBar
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -81,14 +82,14 @@ fun SatelliteListScreen(
             when (val state = uiState) {
                 is SatelliteListUiState.Loading -> {
                     LoadingState(
-                        message = "Loading satellites..."
+                        message = AppConfig.LOADING_SATELLITES
                     )
                 }
 
                 is SatelliteListUiState.Error -> {
                     ErrorState(
-                        title = "Failed to Load Satellites",
-                        message = "Unable to load satellite data. Please check your connection and try again."
+                        title = AppConfig.ERROR_FAILED_TO_LOAD_SATELLITES_TITLE,
+                        message = AppConfig.ERROR_FAILED_TO_LOAD_SATELLITES_CHECK_CONNECTION
                     )
                 }
 
@@ -97,16 +98,19 @@ fun SatelliteListScreen(
                         state.displaySatellites.isEmpty() && state.searchQuery.isNotBlank() -> {
                             EmptyState(
                                 icon = Icons.Filled.Search,
-                                title = "No Results Found",
-                                subtitle = "No satellites match \"${state.searchQuery}\". Try a different search term."
+                                title = AppConfig.EMPTY_NO_RESULTS_TITLE,
+                                subtitle = String.format(
+                                    AppConfig.EMPTY_NO_RESULTS_SUBTITLE_TEMPLATE,
+                                    state.searchQuery
+                                )
                             )
                         }
 
                         state.displaySatellites.isEmpty() -> {
                             EmptyState(
                                 icon = Icons.Filled.Info,
-                                title = "No Satellites Available",
-                                subtitle = "There are currently no satellites to display."
+                                title = AppConfig.EMPTY_NO_SATELLITES_TITLE,
+                                subtitle = AppConfig.EMPTY_NO_SATELLITES_SUBTITLE
                             )
                         }
 

@@ -2,10 +2,9 @@ package com.tamersarioglu.satellitelocator.domain.usecase
 
 import com.tamersarioglu.satellitelocator.domain.model.SatelliteDetail
 import com.tamersarioglu.satellitelocator.domain.repository.SatelliteRepository
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class GetSatelliteDetailUseCase @Inject constructor(
     private val repository: SatelliteRepository
 ) {
@@ -16,7 +15,7 @@ class GetSatelliteDetailUseCase @Inject constructor(
             if (detail != null) {
                 Result.success(detail)
             } else {
-                Result.failure(IllegalArgumentException("Satellite detail not found for ID: $satelliteId"))
+                Result.failure(IllegalArgumentException("${AppConfig.ERROR_SATELLITE_DETAIL_NOT_FOUND}: $satelliteId"))
             }
         } catch (e: Exception) {
             Result.failure(e)

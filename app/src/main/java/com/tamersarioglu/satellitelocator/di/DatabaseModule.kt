@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.tamersarioglu.satellitelocator.data.local.database.SatelliteDatabase
 import com.tamersarioglu.satellitelocator.data.local.dao.SatelliteDao
 import com.tamersarioglu.satellitelocator.data.local.dao.SatelliteDetailDao
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +24,7 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             SatelliteDatabase::class.java,
-            "satellite_database"
+            AppConfig.DATABASE_NAME
         ).build()
     }
 

@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tamersarioglu.satellitelocator.domain.model.Satellite
 import com.tamersarioglu.satellitelocator.domain.usecase.GetSatellitesUseCase
+import com.tamersarioglu.satellitelocator.utils.AppConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,17 +40,16 @@ class SatelliteListViewModel @Inject constructor(
     private fun observeSatellites() {
         viewModelScope.launch {
             try {
-                delay(2000)
                 getSatellitesUseCase().collect { satellites ->
                     updateSatellitesData(satellites)
                 }
             } catch (error: Exception) {
                 _uiState.value = SatelliteListUiState.Error(
-                    error.message ?: "Failed to load satellites"
+                    error.message ?: AppConfig.ERROR_FAILED_TO_LOAD_SATELLITES
                 )
                 sendUiEffect(
                     SatelliteListUiEffect.ShowError(
-                        error.message ?: "Failed to load satellites"
+                        error.message ?: AppConfig.ERROR_FAILED_TO_LOAD_SATELLITES
                     )
                 )
             }
